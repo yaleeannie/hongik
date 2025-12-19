@@ -297,7 +297,21 @@ html, body {
   letter-spacing: 0.18em;
   opacity: 0.6;
 }
+.hero-title {
+  animation: fadeOutTitle 1.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  animation-delay: 1s;
+}
 
+@keyframes fadeOutTitle {
+  from {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
 </style>
 </head>
 
@@ -436,7 +450,18 @@ heroCanvas.addEventListener("mousemove", (e) => {
   const time = CURRENT_DATA.times[c];
   const value = CURRENT_DATA.values[r]?.[c];
 
-  tooltip.textContent = `${date} · ${time} — ${Number(value).toFixed(2)}`;
+const [cityName, countryName] = CITY_TITLES[CURRENT_CITY] || [CURRENT_CITY, ""];
+
+const d = new Date(date);
+const month = d.toLocaleString("en-US", { month: "short" });
+const day = d.getDate();
+
+tooltip.innerHTML = `
+  <div>City: ${cityName} (${countryName})</div>
+  <div>Date: ${month} ${day}</div>
+  <div>Time: ${time}</div>
+  <div>Brightness: ${Number(value).toFixed(2)}</div>
+`;
   tooltip.style.left = e.clientX + "px";
   tooltip.style.top = e.clientY + "px";
   tooltip.style.opacity = 1;
@@ -499,6 +524,19 @@ Object.entries(BRIGHTNESS_DATA).forEach(([city, data]) => {
   const [line1, line2] = CITY_TITLES[city] || [city, ""];
   titleLine1.textContent = line1;
   titleLine2.textContent = line2;
+  const heroTitle = document.getElementById("hero-title");
+
+// 애니메이션 리셋
+heroTitle.style.animation = "none";
+heroTitle.style.opacity = "1";
+
+// reflow 강제 (중요)
+void heroTitle.offsetWidth;
+
+// 다시 fade-out 애니메이션 적용
+heroTitle.style.animation = "fadeOutTitle 1.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards";
+heroTitle.style.animationDelay = "3s";
+
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -562,8 +600,25 @@ function buildLegend(){
 
   bar.style.background = `linear-gradient(to top, ${gradient})`;
 }
+window.addEventListener("load", () => {
+  const title = document.querySelector(".hero-title");
+  if (!title) return;
+
+  // 3초 후 서서히 사라지기
+  setTimeout(() => {
+    title.style.transition = "opacity 1s ease";
+    title.style.opacity = "0";
+  }, 3000);
+});
+
+setTimeout(() => {
+  title.style.transition = "opacity 1s ease, transform 1s ease";
+  title.style.opacity = "0";
+  title.style.transform = "translate(-50%, -60%)";
+}, 3000);
 
 </script>
 
 </body>
 </html>
+
